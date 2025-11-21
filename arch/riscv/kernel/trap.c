@@ -80,16 +80,51 @@ void kernel_entry(void) {
     );
 }
 
+void trap_init(void) 
+{
+    WRITE_CSR(stvec, (uint32_t) kernel_entry);
+}
+
 void handle_trap(struct trap_frame *tf) 
 {
     uint32_t scause = READ_CSR(scause);
     uint32_t stval = READ_CSR(stval);
     uint32_t sepc = READ_CSR(sepc);
 
+    // 例外・割り込みの処理
+    if (scause & 0x80000000u) 
+    {
+        // 割り込み
+        uint32_t irq = scause & 0x7FFFFFFF;
+        switch (irq) 
+        {
+            case 1: // ソフトウェア割り込み
+                // ここにソフトウェア割り込みの処理を追加
+                break;
+            case 5: // タイマー割り込み
+                // ここにタイマー割り込みの処理を追加
+                break;
+            case 9: // 外部割り込み
+                // ここに外部割り込みの処理を追加
+                break;
+            default:
+                panic("Unhandled interrupt: scause=0x%x", scause);
+        }
+    } 
+    else 
+    {
+        // 例外
+        switch (scause) 
+        {
+            case SCAUSE_ECALL:
+                // システムコールの処理
+                tf->a0 = 0; // 仮に戻り値0を設定
+                tf->sp += 4; // 次の命令へ進める
+                break;
+            default:
+                panic("Unhandled exception: scause=0x%x, sepc=0x%x, stval=0x%x",
+                      scause, sepc, stval);
+        }
+    }
     panic("Unhandled trap/interrupt occurred.");
-}
-
-void trap_init(void) 
-{
-    WRITE_CSR(stvec, (uint32_t) kernel_entry);
 }

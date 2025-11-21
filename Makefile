@@ -17,6 +17,8 @@ ARCH_DIR    := arch/$(ARCH)
 INCLUDE_ARCH_DIR := $(ARCH_DIR)/include
 INCLUDE_DIR := include
 
+TEST_DIR := test
+
 LDSCRIPT := $(ARCH_DIR)/kernel/linker.ld
 
 CFLAGS := -Wall -Wextra -O2 \
@@ -38,7 +40,13 @@ SRCS_KERNEL := \
 SRCS_LIB    := \
 	$(wildcard lib/*.c)
 
-SRCS := $(SRCS_ARCH) $(SRCS_KERNEL) $(SRCS_LIB)
+SRCS_MM := \
+	$(wildcard mm/*.c)
+
+SRCS_MMTEST := \
+	$(wildcard $(TEST_DIR)/mm/*.c)
+
+SRCS := $(SRCS_ARCH) $(SRCS_KERNEL) $(SRCS_LIB) $(SRCS_MM) $(SRCS_MMTEST)
 
 # src: arch/riscv/kernel/boot.c → obj: build/arch/riscv/kernel/boot.o
 OBJS := $(addprefix $(OBJDIR)/,$(SRCS:.c=.o))

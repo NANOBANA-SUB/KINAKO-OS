@@ -7,6 +7,12 @@ typedef unsigned long uint64_t;
 
 typedef uint32_t size_t;
 
+typedef uint32_t paddr32_t;
+typedef uint32_t vaddr32_t;
+typedef uint64_t paddr64_t;
+typedef uint64_t vaddr64_t;
+typedef uint32_t bool;
+
 #define true 1
 #define false 0
 #define NULL ((void *)0)
@@ -17,3 +23,5 @@ typedef uint32_t size_t;
 #define va_start __builtin_va_start
 #define va_end __builtin_va_end
 #define va_arg __builtin_va_arg
+
+#define PAGE_SIZE 4096

@@ -4,6 +4,7 @@
 #include "panic.h"
 #include "csr.h"
 #include "trap.h"
+#include "alloc.h"
 
 extern char __bss[];
 extern char __bss_end[];
@@ -27,6 +28,12 @@ static void kernel_main(void)
 {
     printk("Kernel initialized successfully.\n");
     printk("Hello, KINAKO OS!\n");
+
+    paddr32_t page0 = alloc_pages(2); // 2ページ(8KB)のメモリを確保
+    paddr32_t page1 = alloc_pages(1); // 1ページ(4KB)のメモリを確保
+
+    printk("Allocated pages test: paddr0=0x%x\n", page0);
+    printk("Allocated pages test: paddr1=0x%x\n", page1);
 
     while (1) 
     {
