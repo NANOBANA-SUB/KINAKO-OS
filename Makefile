@@ -14,6 +14,7 @@ KERNEL_ELF := $(BUILDDIR)/kernel.elf
 KERNEL_BIN := $(BUILDDIR)/kernel.bin
 
 ARCH_DIR    := arch/$(ARCH)
+INCLUDE_ARCH_DIR := $(ARCH_DIR)/include
 INCLUDE_DIR := include
 
 LDSCRIPT := $(ARCH_DIR)/kernel/linker.ld
@@ -22,14 +23,14 @@ CFLAGS := -Wall -Wextra -O2 \
           -ffreestanding -nostdlib -nostartfiles \
           -fno-builtin -fno-stack-protector \
           -march=rv32imac -mabi=ilp32 \
-          -I$(INCLUDE_DIR) -I$(ARCH_DIR)/include
+          -I$(INCLUDE_DIR) -I$(INCLUDE_ARCH_DIR)/asm
 
 LDFLAGS := -nostdlib -nostartfiles -ffreestanding
 
 # ==== sources / objects ===========================================
 
 SRCS_ARCH   := \
-	$(ARCH_DIR)/kernel/boot.c
+	$(wildcard $(ARCH_DIR)/kernel/*.c)
 
 SRCS_KERNEL := \
 	kernel/main.c

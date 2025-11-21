@@ -1,5 +1,6 @@
 #include "common.h"
 #include "string.h"
+#include "console.h"
 
 extern char __bss[];
 extern char __bss_end[];
@@ -12,8 +13,11 @@ void kernel_main()
 
     // Kernel main logic here
 
+    const char *msg = "Hello, KINAKO OS!\n";
+    console_write(msg);
+
     while (1) 
     {
-        // Kernel idle loop
+        __asm__ volatile ("wfi");
     }
 }
