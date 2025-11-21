@@ -37,8 +37,3 @@ size_t strlen(const char *s)
     }
     return (size_t)(p - s);
 }
-
-void printk(const char *fmt, ...) 
-{
-    
-}

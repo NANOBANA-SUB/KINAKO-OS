@@ -6,3 +6,14 @@ typedef unsigned int uint32_t;
 typedef unsigned long uint64_t;
 
 typedef uint32_t size_t;
+
+#define true 1
+#define false 0
+#define NULL ((void *)0)
+#define alignup(x, align) __builtin_align_up((x), (align))
+#define aligndown(x, align) __builtin_align_down((x), (align))
+#define is_aligned(x, align) __builtin_is_aligned((x), (align))
+#define va_list __builtin_va_list
+#define va_start __builtin_va_start
+#define va_end __builtin_va_end
+#define va_arg __builtin_va_arg

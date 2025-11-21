@@ -1,6 +1,6 @@
 #include "common.h"
 #include "string.h"
-#include "console.h"
+#include "printk.h"
 
 extern char __bss[];
 extern char __bss_end[];
@@ -13,9 +13,9 @@ void kernel_main()
 
     // Kernel main logic here
 
-    const char *msg = "Hello, KINAKO OS!\n";
-    console_write(msg);
-
+    printk("Kernel initialized successfully.\n");
+    printk("Hello, KINAKO OS!\n");
+    
     while (1) 
     {
         __asm__ volatile ("wfi");

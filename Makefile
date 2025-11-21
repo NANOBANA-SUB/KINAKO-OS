@@ -33,10 +33,10 @@ SRCS_ARCH   := \
 	$(wildcard $(ARCH_DIR)/kernel/*.c)
 
 SRCS_KERNEL := \
-	kernel/main.c
+	$(wildcard kernel/*.c)
 
 SRCS_LIB    := \
-	lib/string.c
+	$(wildcard lib/*.c)
 
 SRCS := $(SRCS_ARCH) $(SRCS_KERNEL) $(SRCS_LIB)
 
