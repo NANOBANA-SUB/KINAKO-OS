@@ -3,7 +3,7 @@
 ARCH       := riscv
 CROSS_COMPILE ?= riscv64-unknown-elf-
 
-CC      := $(CROSS_COMPILE)gcc
+CC      := clang
 OBJCOPY := $(CROSS_COMPILE)objcopy
 QEMU    := qemu-system-riscv32
 
@@ -20,9 +20,9 @@ INCLUDE_DIR := include
 LDSCRIPT := $(ARCH_DIR)/kernel/linker.ld
 
 CFLAGS := -Wall -Wextra -O2 \
+		  --target=$(ARCH)32-unknown-elf \
           -ffreestanding -nostdlib -nostartfiles \
           -fno-builtin -fno-stack-protector \
-          -march=rv32imac -mabi=ilp32 \
           -I$(INCLUDE_DIR) -I$(INCLUDE_ARCH_DIR)/asm
 
 LDFLAGS := -nostdlib -nostartfiles -ffreestanding

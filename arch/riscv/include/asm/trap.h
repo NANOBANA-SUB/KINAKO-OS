@@ -35,3 +35,6 @@ struct trap_frame
     uint32_t s11;
     uint32_t sp;
 } __attribute__((packed));
+
+void kernel_entry(void);
+void handle_trap(struct trap_frame *tf);
