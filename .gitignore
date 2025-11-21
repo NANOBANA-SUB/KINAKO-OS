@@ -1,0 +1,86 @@
+# ========================
+# ビルド成果物 / 生成ファイル
+# ========================
+/build/
+/build-*/
+/out/
+/bin/
+/obj/
+/dist/
+
+# オブジェクトファイル・依存関係
+*.o
+*.obj
+*.d
+*.d.*
+*.su
+
+# ライブラリ・実行ファイル
+*.a
+*.lib
+*.so
+*.so.*
+*.dll
+*.exe
+
+# OSイメージ・ブートローダ関連
+*.elf
+*.bin
+*.img
+*.iso
+*.lst
+*.map
+
+# ログ・一時ファイル
+*.log
+*.tmp
+*.temp
+
+# ========================
+# 開発ツール関連
+# ========================
+
+# エディタ・OSごとのゴミ
+*~
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ctags / gtags
+tags
+TAGS
+GTAGS
+GRTAGS
+GPATH
+
+# ========================
+# IDE / LSP
+# ========================
+
+# VSCode
+.vscode/
+
+# CLion / IntelliJ
+.idea/
+cmake-build-*/
+
+# clangd / language server
+.cache/
+.clangd/
+compile_commands.json
+
+# ========================
+# テスト・カバレッジ
+# ========================
+*.gcno
+*.gcda
+*.gcov
+
+# ========================
+# その他
+# ========================
+
+# QEMUなどのログ
+qemu.log
+*.qlog
