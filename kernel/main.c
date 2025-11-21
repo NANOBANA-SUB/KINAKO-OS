@@ -8,19 +8,26 @@
 extern char __bss[];
 extern char __bss_end[];
 
-void kernel_main() 
+static void kernel_main(void);
+
+void start_kernel(void) 
 {
-    // Zero initialize the BSS segment
+    // bssセグメントのゼロ初期化
     size_t bss_size = (size_t)(__bss_end - __bss);
     memset(__bss, 0, bss_size);
 
-    // Kernel main logic here
+    // 例外ハンドラの初期化
+    trap_init();
 
+    // カーネルメイン関数の呼び出し
+    kernel_main();
+}
+
+static void kernel_main(void) 
+{
     printk("Kernel initialized successfully.\n");
     printk("Hello, KINAKO OS!\n");
 
-    WRITE_CSR(stvec, (uint32_t) kernel_entry);
-    __asm__ __volatile__("unimp"); // 無効な命令
     while (1) 
     {
         __asm__ volatile ("wfi");

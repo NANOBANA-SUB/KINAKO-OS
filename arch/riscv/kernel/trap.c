@@ -88,3 +88,8 @@ void handle_trap(struct trap_frame *tf)
 
     panic("Unhandled trap/interrupt occurred.");
 }
+
+void trap_init(void) 
+{
+    WRITE_CSR(stvec, (uint32_t) kernel_entry);
+}

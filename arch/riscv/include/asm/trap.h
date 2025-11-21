@@ -37,4 +37,5 @@ struct trap_frame
 } __attribute__((packed));
 
 void kernel_entry(void);
+void trap_init(void);
 void handle_trap(struct trap_frame *tf);
