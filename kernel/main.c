@@ -1,6 +1,7 @@
 #include "common.h"
 #include "string.h"
 #include "printk.h"
+#include "panic.h"
 
 extern char __bss[];
 extern char __bss_end[];
@@ -15,7 +16,9 @@ void kernel_main()
 
     printk("Kernel initialized successfully.\n");
     printk("Hello, KINAKO OS!\n");
-    
+
+    panic("This is a test panic message.");
+    printk("This line will not be reached.\n");
     while (1) 
     {
         __asm__ volatile ("wfi");
