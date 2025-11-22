@@ -5,6 +5,9 @@
 #include "csr.h"
 #include "trap.h"
 #include "alloc.h"
+#include "proc.h"
+#include "swich.h"
+#include "console.h"
 
 extern char __bss[];
 extern char __bss_end[];
@@ -24,16 +27,42 @@ void start_kernel(void)
     kernel_main();
 }
 
+void delay(void) {
+    for (int i = 0; i < 30000000; i++)
+        __asm__ __volatile__("nop"); // 何もしない命令
+}
+
+struct proc *proc_a;
+struct proc *proc_b;
+
+void proc_a_entry(void) {
+    printk("starting process A\n");
+    while (1) {
+        console_putc('A');
+        context_switch(&proc_a->sp, &proc_b->sp);
+        delay();
+    }
+}
+
+void proc_b_entry(void) {
+    printk("starting process B\n");
+    while (1) {
+        console_putc('B');
+        context_switch(&proc_b->sp, &proc_a->sp);
+        delay();
+    }
+}
+
 static void kernel_main(void) 
 {
     printk("Kernel initialized successfully.\n");
     printk("Hello, KINAKO OS!\n");
 
-    paddr32_t page0 = alloc_pages(2); // 2ページ(8KB)のメモリを確保
-    paddr32_t page1 = alloc_pages(1); // 1ページ(4KB)のメモリを確保
+    proc_a = proc_create("proc_a", proc_a_entry);
+    proc_b = proc_create("proc_b", proc_b_entry);
+    proc_a_entry(); // プロセスAを開始
 
-    printk("Allocated pages test: paddr0=0x%x\n", page0);
-    printk("Allocated pages test: paddr1=0x%x\n", page1);
+    panic("kernel_main: should not reach here");
 
     while (1) 
     {

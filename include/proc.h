@@ -14,3 +14,16 @@ struct proc
     vaddr32_t sp; // コンテクストスイッチ用スタックポインタ
     uint8_t stack[8192]; // カーネルスタック
 };
+
+//!
+//! プロセスを作成する
+//! @param name プロセス名
+//! @param entry プロセスのエントリポイント
+//! @return 作成したプロセスのポインタ
+//!
+struct proc* proc_create(const char* name, void (*entry)(void));
+
+//!
+//! 現在のプロセスをCPUから解放し、他のプロセスに実行を移す
+//!
+void yield(void);
