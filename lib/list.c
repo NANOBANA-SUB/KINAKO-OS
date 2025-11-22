@@ -26,8 +26,8 @@ void list_remove(struct list_node* node)
 {
     node->prev->next = node->next;
     node->next->prev = node->prev;
-    node->prev = NULL;
-    node->next = NULL;
+    node->prev = (struct list_node*)NULL;
+    node->next = (struct list_node*)NULL;
 }
 
 bool list_is_empty(struct list_node* head) 
