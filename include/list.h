@@ -41,7 +41,7 @@ void list_remove(struct list_node* node);
 //! @param head リストの先頭ノードへのポインタ
 //! @return 空であれば1、そうでなければ0
 //!
-int list_is_empty(struct list_node* head);
+bool list_is_empty(struct list_node* head);
 
 //!
 //! リストの先頭ノードを取得する

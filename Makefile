@@ -46,7 +46,12 @@ SRCS_MM := \
 SRCS_MMTEST := \
 	$(wildcard $(TEST_DIR)/mm/*.c)
 
-SRCS := $(SRCS_ARCH) $(SRCS_KERNEL) $(SRCS_LIB) $(SRCS_MM) $(SRCS_MMTEST)
+SRCS_LIBTEST := \
+	$(wildcard $(TEST_DIR)/lib/*.c)
+
+SRCS := $(SRCS_ARCH) $(SRCS_KERNEL) $(SRCS_LIB) $(SRCS_MM)
+
+TEST_SRCS := $(SRCS_LIBTEST) $(SRCS_MMTEST)
 
 # src: arch/riscv/kernel/boot.c → obj: build/arch/riscv/kernel/boot.o
 OBJS := $(addprefix $(OBJDIR)/,$(SRCS:.c=.o))
@@ -77,6 +82,17 @@ $(OBJDIR)/%.o: %.S
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# ライブラリテスト用ターゲット
+.PHONY: libtest
+libtest: $(TEST_SRCS:%.c=$(OBJDIR)/%.o)
+
+# ライブラリテストのビルド
+$(OBJDIR)/$(TEST_DIR)/lib/%.o: $(TEST_DIR)/lib/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+
+# ビルド成果物の削除
 clean:
 	rm -rf $(BUILDDIR)
 
