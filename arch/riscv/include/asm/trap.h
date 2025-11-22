@@ -36,6 +36,18 @@ struct trap_frame
     uint32_t sp;
 } __attribute__((packed));
 
+//!
+//! カーネルエントリポイント
+//!
 void kernel_entry(void);
+
+//!
+//! 例外ハンドラの初期化
+//!
 void trap_init(void);
+
+//!!
+//! 例外ハンドラ
+//! @param tf トラップフレームへのポインタ
+//!!
 void handle_trap(struct trap_frame *tf);

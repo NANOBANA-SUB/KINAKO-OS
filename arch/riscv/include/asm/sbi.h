@@ -6,6 +6,18 @@ struct sbiret
     long value;
 };
 
+//!
+//! SBIコールを実行する
+//! @param arg0 引数0
+//! @param arg1 引数1
+//! @param arg2 引数2
+//! @param arg3 引数3
+//! @param arg4 引数4
+//! @param arg5 引数5
+//! @param fid 関数ID
+//! @param eid 拡張ID
+//! @return SBIコールの戻り値
+//!
 struct sbiret sbi_call(long arg0, long arg1, long arg2, long arg3, long arg4,
                        long arg5, long fid, long eid) 
 {
