@@ -7,6 +7,16 @@
 #define PROC_UNUSED 0 // 未使用
 #define PROC_RUNNABLE  1 // 実行可能
 
+enum proc_state 
+{
+    PROC_STATE_UNUSED = 0,
+    PROC_STATE_USED,
+    PROC_STATE_SLEEPING,
+    PROC_STATE_RUNNABLE,
+    PROC_STATE_RUNNING,
+    PROC_STATE_ZOMBIE,
+};
+
 struct proc 
 {
     uint32_t pid; // プロセスID
