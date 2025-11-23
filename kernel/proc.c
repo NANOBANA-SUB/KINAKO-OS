@@ -3,6 +3,7 @@
 #include "panic.h"
 #include "swich.h"
 #include "spinlock.h"
+#include "kalloc.h"
 
 
 /* マルチコア対応へ向けたCPU情報の取得など */
