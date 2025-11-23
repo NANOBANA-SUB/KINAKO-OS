@@ -8,6 +8,7 @@
 #include "proc.h"
 #include "swich.h"
 #include "console.h"
+#include "proc.h"
 
 extern char __bss[];
 extern char __bss_end[];
@@ -27,29 +28,13 @@ void start_kernel(void)
     kernel_main();
 }
 
-void delay(void) {
-    for (int i = 0; i < 30000000; i++)
-        __asm__ __volatile__("nop"); // 何もしない命令
-}
-
-struct proc *proc_a;
-struct proc *proc_b;
-
-void proc_a_entry(void) {
-    printk("starting process A\n");
-    while (1) {
-        console_putc('A');
-        context_switch(&proc_a->sp, &proc_b->sp);
-        delay();
-    }
-}
-
-void proc_b_entry(void) {
-    printk("starting process B\n");
-    while (1) {
-        console_putc('B');
-        context_switch(&proc_b->sp, &proc_a->sp);
-        delay();
+static void worker(void *arg) 
+{
+    uint32_t id = (uint32_t)(uintptr_t)arg;
+    while (1) 
+    {
+        printk("worker id:%d runnning!\n", id);
+        yield();
     }
 }
 
@@ -58,12 +43,17 @@ static void kernel_main(void)
     printk("Kernel initialized successfully.\n");
     printk("Hello, KINAKO OS!\n");
 
-    proc_a = proc_create("proc_a", proc_a_entry);
-    proc_b = proc_create("proc_b", proc_b_entry);
-    proc_a_entry(); // プロセスAを開始
+    // プロセス管理の初期化
+    proc_init();
 
-    panic("kernel_main: should not reach here");
+    // ワーカープロセスの作成
+    proc_create(worker, (void*)(uintptr_t)0, "worker0");
+    proc_create(worker, (void*)(uintptr_t)1, "worker1");
 
+    // スケジューラの開始
+    scheduler_start();
+
+    panic("noreached\n");
     while (1) 
     {
         __asm__ volatile ("wfi");

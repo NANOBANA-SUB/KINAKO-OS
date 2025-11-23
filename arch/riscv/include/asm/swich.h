@@ -1,9 +1,9 @@
 #pragma once
 #include "common.h"
-
+#include "proc.h"
 //!!
 //! コンテキストスイッチを行う
-//! @param old_sp 古いスタックポインタの保存先
-//! @param new_sp 新しいスタックポインタの読み込み元
+//! @param old_context 古いコンテクスト構造体
+//! @param new_context 新しいコンテクスト構造体
 //!!
-void context_switch(uint32_t *old_sp, uint32_t *new_sp);
+void context_switch(struct context *old_context, struct context *new_context);

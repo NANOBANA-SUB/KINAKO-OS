@@ -31,8 +31,9 @@ LDFLAGS := -nostdlib -nostartfiles -ffreestanding
 
 # ==== sources / objects ===========================================
 
-SRCS_ARCH   := \
-	$(wildcard $(ARCH_DIR)/kernel/*.c)
+SRCS_ARCH := \
+    $(wildcard $(ARCH_DIR)/kernel/*.c) \
+    $(wildcard $(ARCH_DIR)/kernel/*.S)
 
 SRCS_KERNEL := \
 	$(wildcard kernel/*.c)
@@ -46,10 +47,16 @@ SRCS_MM := \
 SRCS_MMTEST := \
 	$(wildcard $(TEST_DIR)/mm/*.c)
 
-SRCS := $(SRCS_ARCH) $(SRCS_KERNEL) $(SRCS_LIB) $(SRCS_MM) $(SRCS_MMTEST)
+SRCS_LIBTEST := \
+	$(wildcard $(TEST_DIR)/lib/*.c)
+
+SRCS := $(SRCS_ARCH) $(SRCS_KERNEL) $(SRCS_LIB) $(SRCS_MM)
+
+TEST_SRCS := $(SRCS_LIBTEST) $(SRCS_MMTEST)
 
 # src: arch/riscv/kernel/boot.c → obj: build/arch/riscv/kernel/boot.o
 OBJS := $(addprefix $(OBJDIR)/,$(SRCS:.c=.o))
+OBJS := $(OBJS:.S=.o)
 
 # ==== rules =======================================================
 
@@ -77,6 +84,17 @@ $(OBJDIR)/%.o: %.S
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# ライブラリテスト用ターゲット
+.PHONY: libtest
+libtest: $(TEST_SRCS:%.c=$(OBJDIR)/%.o)
+
+# ライブラリテストのビルド
+$(OBJDIR)/$(TEST_DIR)/lib/%.o: $(TEST_DIR)/lib/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+
+# ビルド成果物の削除
 clean:
 	rm -rf $(BUILDDIR)
 
