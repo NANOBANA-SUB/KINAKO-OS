@@ -34,6 +34,15 @@ size_t strlen(const char *s);
 char *strcpy(char *dest, const char *src);
 
 //!
+//! 文字列を指定した長さだけコピーする
+//! @param dest コピー先の文字列の先頭アドレス
+//! @param src コピー元の文字列の先頭アドレス
+//! @param n コピーする最大バイト数
+//! @return destの値
+//!
+char *strncpy(char *dest, const char *src, size_t n);
+
+//!
 //! 文字列を連結する
 //! @param dest 連結先の文字列の先頭アドレス
 //! @param src 連結元の文字列の先頭アドレス
