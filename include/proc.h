@@ -85,7 +85,7 @@ void proc_init(void);
 //!
 //! プロセスのエントリポイント関数型
 //!
-typedef void (*proc_entry_t)(void);
+typedef void (*proc_entry_t)(void *arg);
 
 //!
 //! 新しいプロセスを作成する
@@ -100,12 +100,17 @@ uint32_t proc_create(proc_entry_t entry, void* arg, const char* name);
 //! スケジューラを起動する
 //! @note この関数は戻らない
 //!
-void scheduler(void) __attribute__((noreturn));
+void scheduler_start(void) __attribute__((noreturn));
 
 //!
 //! 現在のプロセスをCPUから解放し、他のプロセスに実行を移す
 //!
 void yield(void);
+
+//!
+//! タイマー割り込み時に呼び出されるスケジューラ関数
+//!
+void schedule_tick(void);
 
 //!
 //! 現在のプロセスを終了する

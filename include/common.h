@@ -13,6 +13,9 @@ typedef uint64_t paddr64_t;
 typedef uint64_t vaddr64_t;
 typedef uint32_t bool;
 
+typedef uint32_t uintptr_t;
+typedef uint64_t uintptr64_t;
+
 #define true 1
 #define false 0
 #define NULL ((void *)0)

@@ -31,8 +31,9 @@ LDFLAGS := -nostdlib -nostartfiles -ffreestanding
 
 # ==== sources / objects ===========================================
 
-SRCS_ARCH   := \
-	$(wildcard $(ARCH_DIR)/kernel/*.c)
+SRCS_ARCH := \
+    $(wildcard $(ARCH_DIR)/kernel/*.c) \
+    $(wildcard $(ARCH_DIR)/kernel/*.S)
 
 SRCS_KERNEL := \
 	$(wildcard kernel/*.c)
@@ -55,6 +56,7 @@ TEST_SRCS := $(SRCS_LIBTEST) $(SRCS_MMTEST)
 
 # src: arch/riscv/kernel/boot.c → obj: build/arch/riscv/kernel/boot.o
 OBJS := $(addprefix $(OBJDIR)/,$(SRCS:.c=.o))
+OBJS := $(OBJS:.S=.o)
 
 # ==== rules =======================================================
 
