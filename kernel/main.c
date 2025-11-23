@@ -53,7 +53,6 @@ static void kernel_main(void)
     // スケジューラの開始
     scheduler_start();
 
-    panic("noreached\n");
     while (1) 
     {
         __asm__ volatile ("wfi");

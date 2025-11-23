@@ -209,9 +209,6 @@ uint32_t proc_create(proc_entry_t entry, void* arg, const char* name)
     p->kstack_base = kstack;
     p->kstack_top = (uint8_t *)kstack + KSTACK_SIZE;
 
-    printk("kstack_base:%p\n", p->kstack_base);
-    printk("kstack_top:%p\n", p->kstack_top);
-
     // プロセスコンテキストを初期化
     __init_proc_context(p, entry, arg);
 
@@ -321,13 +318,9 @@ static void __init_proc_context(struct proc* p, proc_entry_t entry, void* arg)
     // 戻り先アドレスにプロセスのエントリポイントを設定
     p->context.ra = (uint32_t)__proc_trampoline;
     
-    printk("sp:%p\n", p->context.sp);
-    printk("ra:%p\n", p->context.ra);
     // 引数はレジスタ経由で渡すため、s0に設定（RISC-Vの呼び出し規約に準拠）
     p->context.s0 = (uint32_t)entry;
     p->context.s1 = (uint32_t)arg;
-
-    printk("__init_proc_context: done\n");
 }
 
 static void __proc_trampoline() 
@@ -345,7 +338,5 @@ static void __proc_trampoline()
     entry(arg);
 
     // プロセスが終了したらproc_exitを呼び出す
-
-    printk("__proc_trampoline: done\n");
     proc_exit();
 }
