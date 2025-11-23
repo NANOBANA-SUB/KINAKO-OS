@@ -50,9 +50,7 @@ struct cpu
 enum proc_state 
 {
     PROC_STATE_UNUSED = 0,  // 未使用
-    PROC_STATE_USED,        // 使用中
-    PROC_STATE_SLEEPING,    // スリープ中
-    PROC_STATE_RUNNABLE,    // 実行可能
+    PROC_STATE_READY,       // 使用可能
     PROC_STATE_RUNNING,     // 実行中
     PROC_STATE_ZOMBIE,      // ゾンビ状態
 };

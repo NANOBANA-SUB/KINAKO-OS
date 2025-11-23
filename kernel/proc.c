@@ -76,7 +76,7 @@ static struct proc* __alloc_proc()
         {
             // proc構造体を初期化
             memset(p, 0, sizeof(*p));
-            p->state = PROC_STATE_RUNNABLE;
+            p->state = PROC_STATE_READY;
             p->pid = alloc_pid();
             return p;
         }
@@ -92,7 +92,7 @@ static struct proc* __pickup_next_proc()
         for (uint32_t i = 0; i < PROC_MAX; i++)
         {
             struct proc* p = &g_procs[i];
-            if (p->state == PROC_STATE_RUNNABLE) 
+            if (p->state == PROC_STATE_READY) 
             {
                 return p;
             }
@@ -119,7 +119,7 @@ static struct proc* __pickup_next_proc()
     {
         uint32_t idx = (current_idx + i) % PROC_MAX; // 次のプロセスを循環的に探索
         struct proc* p = &g_procs[idx];
-        if (p->state == PROC_STATE_RUNNABLE) 
+        if (p->state == PROC_STATE_READY) 
         {
             // 実行可能なプロセスが発見されたらそれを返す
             return p;
@@ -163,7 +163,7 @@ static void __schedule()
     // コンテキストスイッチを実行
     if (prev_proc)
     {
-        prev_proc->state = PROC_STATE_RUNNABLE;
+        prev_proc->state = PROC_STATE_READY;
         context_switch(&prev_proc->context, &next_proc->context);
     } 
     else 
@@ -230,7 +230,7 @@ void scheduler_start(void)
     for (uint32_t i = 0; i < PROC_MAX; i++)
     {
         struct proc* p = &g_procs[i];
-        if (p->state == PROC_STATE_RUNNABLE) 
+        if (p->state == PROC_STATE_READY) 
         {
             next_proc = p;
             break;
@@ -264,7 +264,7 @@ void yield(void)
         panic("yeild: no current process");
     }
 
-    current_proc->state = PROC_STATE_RUNNABLE;
+    current_proc->state = PROC_STATE_READY;
     __schedule();
 }
 
@@ -291,10 +291,13 @@ void proc_exit(void)
         current_proc->kstack_top = NULL;
     }
 
-    // プロセス状態をゾンビに設定
-    current_proc->state = PROC_STATE_ZOMBIE;
+    // プロセス状態を未使用に設定
+    current_proc->state = PROC_STATE_READY;
+    current_proc->pid = 0;
     
     // スケジューリングを実行して他のプロセスに切り替え
+    g_current_proc = (struct proc*) NULL;
+
     __schedule();
 
     // ここには戻らない

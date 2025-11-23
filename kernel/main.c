@@ -31,11 +31,13 @@ void start_kernel(void)
 static void worker(void *arg) 
 {
     uint32_t id = (uint32_t)(uintptr_t)arg;
-    while (1) 
+    for(uint32_t i = 0; i < 5; i++)
     {
         printk("worker id:%d runnning!\n", id);
         yield();
     }
+    printk("worker id:%d exiting!\n", id);
+    proc_exit();
 }
 
 static void kernel_main(void) 
