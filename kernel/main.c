@@ -27,47 +27,10 @@ void start_kernel(void)
     kernel_main();
 }
 
-void delay(void) {
-    for (int i = 0; i < 30000000; i++)
-        __asm__ __volatile__("nop"); // 何もしない命令
-}
-
-struct proc *proc_a;
-struct proc *proc_b;
-
-void proc_a_entry(void) {
-    printk("starting process A\n");
-    while (1) {
-        console_putc('A');
-        yield();
-        delay();
-    }
-}
-
-void proc_b_entry(void) {
-    printk("starting process B\n");
-    while (1) {
-        console_putc('B');
-        yield();
-        delay();
-    }
-}
-
 static void kernel_main(void) 
 {
     printk("Kernel initialized successfully.\n");
     printk("Hello, KINAKO OS!\n");
-
-    struct proc* idle_proc = proc_create("idle", NULL);
-    idle_proc->pid = 0; // PID 0をアイドルプロセスに割り当てる
-    struct proc* current_proc = idle_proc;
-
-    proc_a = proc_create("proc_a", proc_a_entry);
-    proc_b = proc_create("proc_b", proc_b_entry);
-    
-    yield(); // 最初のプロセスに切り替え
-
-    panic("kernel_main: should not reach here");
 
     while (1) 
     {

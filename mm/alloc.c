@@ -23,4 +23,5 @@ paddr32_t alloc_pages(size_t num_pages)
 
 void free_pages(paddr32_t addr, size_t num_pages) 
 {
+    // 現状は何もしない（簡易実装のため）
 }
