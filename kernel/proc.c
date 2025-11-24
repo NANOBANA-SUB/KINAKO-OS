@@ -270,7 +270,8 @@ void yield(void)
 
 void schedule_tick(void) 
 {
-    yield();
+    if (g_current_proc)
+        yield();
 }
 
 void proc_exit(void)

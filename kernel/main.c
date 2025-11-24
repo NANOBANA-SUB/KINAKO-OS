@@ -9,6 +9,7 @@
 #include "swich.h"
 #include "console.h"
 #include "proc.h"
+#include "timer.h"
 
 extern char __bss[];
 extern char __bss_end[];
@@ -24,6 +25,9 @@ void start_kernel(void)
     // 例外ハンドラの初期化
     trap_init();
 
+    // タイマーの初期化
+    timer_init();
+
     // カーネルメイン関数の呼び出し
     kernel_main();
 }
@@ -31,13 +35,11 @@ void start_kernel(void)
 static void worker(void *arg) 
 {
     uint32_t id = (uint32_t)(uintptr_t)arg;
-    for(uint32_t i = 0; i < 5; i++)
+    while (1)
     {
-        printk("worker id:%d runnning!\n", id);
-        yield();
+        printk("worker id:%d running!\n", id);
     }
-    printk("worker id:%d exiting!\n", id);
-    proc_exit();
+    
 }
 
 static void kernel_main(void) 

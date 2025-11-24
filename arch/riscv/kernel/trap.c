@@ -1,6 +1,7 @@
 #include "trap.h"
 #include "panic.h"
 #include "csr.h"
+#include "interrupt_handle.h"
 
 __attribute__((naked))
 __attribute__((aligned(4)))
@@ -102,8 +103,8 @@ void handle_trap(struct trap_frame *tf)
                 // ここにソフトウェア割り込みの処理を追加
                 break;
             case 5: // タイマー割り込み
-                // ここにタイマー割り込みの処理を追加
-                break;
+                handle_timer_interrupt();
+                return;
             case 9: // 外部割り込み
                 // ここに外部割り込みの処理を追加
                 break;
@@ -126,5 +127,5 @@ void handle_trap(struct trap_frame *tf)
                       scause, sepc, stval);
         }
     }
-    panic("Unhandled trap/interrupt occurred.");
+    // panic("Unhandled trap/interrupt occurred.");
 }
