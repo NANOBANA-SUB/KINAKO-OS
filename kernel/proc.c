@@ -196,7 +196,7 @@ uint32_t proc_create(proc_entry_t entry, void* arg, const char* name)
     }
 
     // カーネルスタックを割り当てる
-    void *kstack = kalloc_page();
+    void* kstack = kalloc_page();
     if (!kstack)
     {
         // カーネルスタックの割り当てに失敗
