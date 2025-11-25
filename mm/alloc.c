@@ -2,23 +2,17 @@
 #include "string.h"
 #include "panic.h"
 
-paddr32_t alloc_pages(size_t num_pages) 
+paddr32_t alloc_pages(size_t n) 
 {
-    static paddr32_t next_free = (paddr32_t)&__free_ram;
-    paddr32_t end_addr = (paddr32_t)&__free_ram_end;
+    static paddr32_t next_paddr = (paddr32_t) __free_ram;
+    paddr32_t paddr = next_paddr;
+    next_paddr += n * PAGE_SIZE;
 
-    size_t size = num_pages * PAGE_SIZE;
+    if (next_paddr > (paddr32_t) __free_ram_end)
+        panic("out of memory");
 
-    if (next_free + size > end_addr) 
-    {
-        panic("Out of memory in alloc_pages");
-    }
-
-    paddr32_t addr = next_free;
-    next_free += size;
-
-    memset((void *)addr, 0, size);
-    return addr;
+    memset((void *) paddr, 0, n * PAGE_SIZE);
+    return paddr;
 }
 
 void free_pages(paddr32_t addr, size_t num_pages) 

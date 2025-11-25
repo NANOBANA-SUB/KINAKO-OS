@@ -22,6 +22,7 @@ TEST_DIR := test
 LDSCRIPT := $(ARCH_DIR)/kernel/linker.ld
 
 CFLAGS := -Wall -Wextra -O2 \
+		  -g \
 		  --target=$(ARCH)32-unknown-elf \
           -ffreestanding -nostdlib -nostartfiles \
           -fno-builtin -fno-stack-protector \
@@ -101,3 +102,10 @@ clean:
 # QEMUで実行0x80200000 にマップされる ELF をそのまま渡す想定）
 run: $(KERNEL_ELF)
 	$(QEMU) -machine virt -nographic -kernel $(KERNEL_ELF)
+
+# QEMUでデバッグ
+debug: $(KERNEL_ELF)
+	$(QEMU) -machine virt -nographic -kernel $(KERNEL_ELF) -s -S
+
+mmu: $(KERNEL_ELF)
+	$(QEMU) -machine virt -nographic -kernel $(KERNEL_ELF) -d mmu,guest_errors

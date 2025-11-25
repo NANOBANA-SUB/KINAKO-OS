@@ -121,6 +121,9 @@ void handle_trap(struct trap_frame *tf)
                 tf->a0 = 0; // 仮に戻り値0を設定
                 tf->sp += 4; // 次の命令へ進める
                 break;
+            case 0xc:
+                panic("page fault\n");
+                return;
             default:
                 panic("Unhandled exception: scause=0x%x, sepc=0x%x, stval=0x%x",
                       scause, sepc, stval);

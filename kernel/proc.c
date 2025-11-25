@@ -160,6 +160,24 @@ static void __schedule()
 
     next_proc->state = PROC_STATE_RUNNING;
 
+    printk("current_proc: pid=%d kstack_base=%p kstack_top=%p, ppn=%d\n",
+        current_proc->pid, current_proc->kstack_base, current_proc->kstack_top, ((uint32_t) current_proc->page_table / PAGE_SIZE));
+
+    printk("next_proc: pid=%d kstack_base=%p kstack_top=%p, ppn=%d\n",
+        next_proc->pid, next_proc->kstack_base, next_proc->kstack_top, ((uint32_t) next_proc->page_table / PAGE_SIZE));
+
+    dump_pte(next_proc->page_table, 0x80200210);
+    // ページテーブルの切り替え
+    __asm__ __volatile__(
+        "sfence.vma\n"
+        "csrw satp, %[satp]\n"
+        "sfence.vma\n"
+        "csrw sscratch, %[sscratch]\n"
+        :
+        : [satp] "r" (SATP_SV32 | ((uint32_t) next_proc->page_table / PAGE_SIZE)),
+        [sscratch] "r" ((uint32_t) next_proc->kstack_top)
+    );
+
     // コンテキストスイッチを実行
     if (prev_proc)
     {
@@ -208,6 +226,12 @@ uint32_t proc_create(proc_entry_t entry, void* arg, const char* name)
 
     p->kstack_base = kstack;
     p->kstack_top = (uint8_t *)kstack + KSTACK_SIZE;
+
+    // カーネル空間のページをマッピングする
+    uint32_t *pagetable = (uint32_t *)kalloc_page();
+    memset(pagetable, 0, PAGE_SIZE);
+    map_kernel_space(pagetable);
+    p->page_table = pagetable;
 
     // プロセスコンテキストを初期化
     __init_proc_context(p, entry, arg);

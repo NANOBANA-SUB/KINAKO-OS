@@ -3,9 +3,9 @@
 
 //!
 //! 1ページ（4KB）を割り当てる
-//! @return 割り当てたページの物理アドレスへのポインタ
+//! @return 割り当てたページの物理アドレス
 //!
-void* kalloc_page(void);
+paddr32_t kalloc_page(void);
 
 //!
 //! 1ページ（4KB）を解放する

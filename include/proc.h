@@ -1,5 +1,6 @@
 #pragma once
 #include "common.h"
+#include "MMU.h"
 
 #define CPU_MAX      4  // 最大CPU数
 
@@ -65,6 +66,8 @@ struct proc
     enum proc_state state;                  // プロセスの状態
 
     struct context  context;                // プロセスコンテキスト
+
+    uint32_t        *page_table;            // ページテーブル
 
     void            *kstack_base;           // カーネルスタックのベースアドレス
     void            *kstack_top;            // カーネルスタックのトップアドレス
