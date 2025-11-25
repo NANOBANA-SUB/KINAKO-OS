@@ -3,6 +3,8 @@
 #include "panic.h"
 #include "swich.h"
 #include "kalloc.h"
+#include "alloc.h"
+#include "MMU.h"
 
 /* マルチコア対応へ向けたCPU情報の取得など */
 struct cpu cpus[CPU_MAX];       // 全てのCPU
@@ -18,6 +20,8 @@ struct cpu* mycpu(void)
 /* グローバル変数群 */
 struct proc g_procs[PROC_MAX];                      // 全てのプロセス
 struct proc *g_current_proc = (struct proc*)NULL;   // 現在実行中のプロセス
+extern char __kernel_base[];
+extern char __free_ram_end[];
 
 /* 内部で用いるグローバル変数群 */
 static struct context g_boot_context;               // ブートプロセスのコンテキスト
@@ -159,6 +163,17 @@ static void __schedule()
     g_current_proc = next_proc;
 
     next_proc->state = PROC_STATE_RUNNING;
+    
+    // ページテーブルの切り替えをできるようにする
+    __asm__ __volatile__
+    (
+        "sfence.vma\n"
+        "csrw satp, %[satp]\n"
+        "sfence.vma\n"
+        :
+        // 行末のカンマを忘れずに！
+        : [satp] "r" (SATP_SV32 | ((uint32_t) next_proc->pagetable / PAGE_SIZE))
+    );
 
     // カーネルスタックのアドレスをsscrathに退避させる。
     __asm__ volatile ("csrw sscratch, %0" :: "r"(next_proc->kstack_top));
@@ -211,6 +226,12 @@ uint32_t proc_create(proc_entry_t entry, void* arg, const char* name)
 
     p->kstack_base = kstack;
     p->kstack_top = (uint8_t *)kstack + KSTACK_SIZE;
+
+    // カーネルのページをマッピングする
+    uint32_t *pagetable = (uint32_t *)alloc_pages(1);
+    kernel_map_page(pagetable);
+
+    p->pagetable = pagetable;
 
     // プロセスコンテキストを初期化
     __init_proc_context(p, entry, arg);
