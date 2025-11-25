@@ -3,6 +3,7 @@
 #include "panic.h"
 #include "swich.h"
 #include "kalloc.h"
+#include "alloc.h"
 #include "MMU.h"
 
 /* マルチコア対応へ向けたCPU情報の取得など */
@@ -162,7 +163,7 @@ static void __schedule()
     g_current_proc = next_proc;
 
     next_proc->state = PROC_STATE_RUNNING;
-
+    
     // ページテーブルの切り替えをできるようにする
     __asm__ __volatile__
     (
@@ -227,7 +228,7 @@ uint32_t proc_create(proc_entry_t entry, void* arg, const char* name)
     p->kstack_top = (uint8_t *)kstack + KSTACK_SIZE;
 
     // カーネルのページをマッピングする
-    uint32_t *pagetable = (uint32_t *) kalloc_page();
+    uint32_t *pagetable = (uint32_t *)alloc_pages(1);
     for (paddr32_t paddr = (paddr32_t)__kernel_base; paddr < (paddr32_t)__free_ram_end; paddr += PAGE_SIZE)
     {
         map_page(pagetable, paddr, paddr, PAGE_R | PAGE_W | PAGE_X);

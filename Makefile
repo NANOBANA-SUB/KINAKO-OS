@@ -22,7 +22,7 @@ TEST_DIR := test
 LDSCRIPT := $(ARCH_DIR)/kernel/linker.ld
 
 CFLAGS := -Wall -Wextra -O2 \
-		  -g \
+		  -g3 \
 		  --target=$(ARCH)32-unknown-elf \
           -ffreestanding -nostdlib -nostartfiles \
           -fno-builtin -fno-stack-protector \
