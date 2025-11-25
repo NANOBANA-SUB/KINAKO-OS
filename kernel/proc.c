@@ -160,6 +160,9 @@ static void __schedule()
 
     next_proc->state = PROC_STATE_RUNNING;
 
+    // カーネルスタックのアドレスをsscrathに退避させる。
+    __asm__ volatile ("csrw sscratch, %0" :: "r"(next_proc->kstack_top));
+
     // コンテキストスイッチを実行
     if (prev_proc)
     {
