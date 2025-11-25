@@ -16,3 +16,9 @@
 //! @param flags ページの各種フラグ
 //!
 void map_page(uint32_t *table1, uint32_t vaddr, paddr32_t paddr, uint32_t flags);
+
+//!
+//! カーネルのページマッピングを行う
+//! @param table1 第一テーブルのポインタ
+//!
+void kernel_map_page(uint32_t *table1);

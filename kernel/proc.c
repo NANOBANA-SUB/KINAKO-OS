@@ -229,10 +229,7 @@ uint32_t proc_create(proc_entry_t entry, void* arg, const char* name)
 
     // カーネルのページをマッピングする
     uint32_t *pagetable = (uint32_t *)alloc_pages(1);
-    for (paddr32_t paddr = (paddr32_t)__kernel_base; paddr < (paddr32_t)__free_ram_end; paddr += PAGE_SIZE)
-    {
-        map_page(pagetable, paddr, paddr, PAGE_R | PAGE_W | PAGE_X);
-    }
+    kernel_map_page(pagetable);
 
     p->pagetable = pagetable;
 
