@@ -66,6 +66,8 @@ struct proc
 
     struct context  context;                // プロセスコンテキスト
 
+    uint32_t        *pagetable;             // ページテーブル
+
     void            *kstack_base;           // カーネルスタックのベースアドレス
     void            *kstack_top;            // カーネルスタックのトップアドレス
 
