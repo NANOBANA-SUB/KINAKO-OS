@@ -20,8 +20,6 @@ struct cpu* mycpu(void)
 /* グローバル変数群 */
 struct proc g_procs[PROC_MAX];                      // 全てのプロセス
 struct proc *g_current_proc = (struct proc*)NULL;   // 現在実行中のプロセス
-extern char __kernel_base[];
-extern char __free_ram_end[];
 
 /* 内部で用いるグローバル変数群 */
 static struct context g_boot_context;               // ブートプロセスのコンテキスト
