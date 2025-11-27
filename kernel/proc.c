@@ -286,6 +286,9 @@ void scheduler_start(void)
         : [satp] "r" (SATP_SV32 | ((uint32_t) next_proc->pagetable / PAGE_SIZE))
     );
 
+    // カーネルスタックのアドレスをsscrathに退避させる。
+    __asm__ volatile ("csrw sscratch, %0" :: "r"(next_proc->kstack_top));
+
     // コンテキストスイッチを実行
     context_switch(&g_boot_context, &next_proc->context);
 

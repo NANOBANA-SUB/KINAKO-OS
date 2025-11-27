@@ -12,3 +12,8 @@ void console_putc(char ch);
 //! @param buf 出力する文字列
 //!
 void console_write(const char *buf);
+
+//!
+//! コンソールに出力されてる文字列を読み取る
+//!
+int console_getchar(void);

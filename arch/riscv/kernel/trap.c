@@ -1,6 +1,8 @@
 #include "trap.h"
 #include "panic.h"
 #include "csr.h"
+#include "proc.h"
+#include "syscall.h"
 
 __attribute__((naked))
 __attribute__((aligned(4)))
@@ -100,7 +102,7 @@ void handle_trap(struct trap_frame *tf)
 {
     uint32_t scause = READ_CSR(scause);
     uint32_t stval = READ_CSR(stval);
-    uint32_t sepc = READ_CSR(sepc);
+    uint32_t sepc_ = READ_CSR(sepc);
 
     // 例外・割り込みの処理
     if (scause & 0x80000000u) 
@@ -129,13 +131,40 @@ void handle_trap(struct trap_frame *tf)
         {
             case SCAUSE_ECALL:
                 // システムコールの処理
-                tf->a0 = 0; // 仮に戻り値0を設定
-                tf->sp += 4; // 次の命令へ進める
+                syscall_handler(tf);
+                sepc_ += 4;  // 命令サイズ分加算し、ユーザモードに戻る際に次の命令から実行を再開させる。
                 break;
             default:
                 panic("Unhandled exception: scause=0x%x, sepc=0x%x, stval=0x%x",
-                      scause, sepc, stval);
+                      scause, sepc_, stval);
         }
+
+        WRITE_CSR(sepc, sepc_);
+        return;
     }
     panic("Unhandled trap/interrupt occurred.");
+}
+
+void syscall_handler(struct trap_frame *tf)
+{
+    switch (tf->a3)
+    {
+    case SYS_PUTCHAR:
+        console_putc(tf->a0);
+        break;
+    case SYS_GETCHAR:
+        while (1)
+        {
+            long ch = console_getchar();
+            if (ch >= 0)
+            {
+                tf->a0 = ch;
+                break;
+            }
+            yield();
+        }
+        break;
+    default:
+        panic("syscall_hander:unexpected syscall a3=%x\n", tf->a3);
+    }
 }
