@@ -1,6 +1,7 @@
 #include "trap.h"
 #include "panic.h"
 #include "csr.h"
+#include "proc.h"
 #include "syscall.h"
 
 __attribute__((naked))
@@ -150,6 +151,18 @@ void syscall_handler(struct trap_frame *tf)
     {
     case SYS_PUTCHAR:
         console_putc(tf->a0);
+        break;
+    case SYS_GETCHAR:
+        while (1)
+        {
+            long ch = console_getchar();
+            if (ch >= 0)
+            {
+                tf->a0 = ch;
+                break;
+            }
+            yield();
+        }
         break;
     default:
         panic("syscall_hander:unexpected syscall a3=%x\n", tf->a3);

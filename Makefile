@@ -83,6 +83,12 @@ KERNEL_OBJS := $(patsubst %.S,$(OBJDIR)/%.o,$(KERNEL_OBJS))
 SRCS_USER := $(wildcard $(USER_DIR)/*.c)
 USER_OBJS := $(patsubst $(USER_DIR)/%.c,$(OBJDIR)/$(USER_DIR)/%.o,$(SRCS_USER))
 
+# 共通ライブラリソース
+COMMON_LIB_SRCS := lib/string.c
+
+# ユーザ側用に、共通ライブラリを別オブジェクトとしてビルド
+USER_LIB_OBJS := $(patsubst lib/%.c,$(OBJDIR)/userlib/%.o,$(COMMON_LIB_SRCS))
+
 # ==== phony targets ===============================================
 
 .PHONY: all clean run debug
@@ -131,10 +137,10 @@ $(OBJDIR)/mm/%.o: mm/%.c
 # ==== user shell build ============================================
 
 # 1. シェル ELF を作る（ユーザ専用リンカスクリプト user.ld 使用）
-$(SHELL_ELF): $(USER_OBJS) $(USER_LDSCRIPT)
+$(SHELL_ELF): $(USER_OBJS) $(USER_LIB_OBJS) $(USER_LDSCRIPT)
 	@mkdir -p $(dir $@)
 	$(CC) $(LDFLAGS) -Wl,-T,$(USER_LDSCRIPT) -Wl,-Map,$(BUILDDIR)/user/shell.map \
-		-o $@ $(USER_OBJS)
+		-o $@ $(USER_OBJS) $(USER_LIB_OBJS)
 
 # 2. ELF → 生バイナリ (shell.bin)
 $(SHELL_BIN): $(SHELL_ELF)
@@ -148,6 +154,11 @@ $(SHELL_BIN_OBJ): $(SHELL_BIN)
 
 # user/*.c → build/user/*.o
 $(OBJDIR)/$(USER_DIR)/%.o: $(USER_DIR)/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS_USER) -c $< -o $@
+
+# userlib 用のビルドルール（CFLAGS_USER でコンパイル）
+$(OBJDIR)/userlib/%.o: lib/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS_USER) -c $< -o $@
 
