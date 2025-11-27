@@ -1,6 +1,7 @@
 #include "MMU.h"
 #include "panic.h"
 #include "alloc.h"
+#include "string.h"
 
 extern char __kernel_base[];
 extern char __free_ram_end[];
@@ -38,5 +39,22 @@ void kernel_map_page(uint32_t *table1)
     for (paddr32_t paddr = (paddr32_t)__kernel_base; paddr < (paddr32_t)__free_ram_end; paddr += PAGE_SIZE)
     {
         map_page(table1, paddr, paddr, PAGE_R | PAGE_W | PAGE_X);
+    }
+}
+
+void user_map_page(uint32_t *table1, const void *image, size_t image_size)
+{
+    for (uint32_t off = 0; off < image_size; off += PAGE_SIZE)
+    {
+        paddr32_t page = alloc_pages(1);
+
+        size_t remaining = image_size - off;
+        size_t copy_size = PAGE_SIZE <= remaining ? PAGE_SIZE : remaining;
+
+        // 確保したページに取得したデータをコピーする
+        memcpy((void *) page, image + off, copy_size);
+
+        // ページテーブルにマッピングする
+        map_page(table1, USER_BASE + off, page, PAGE_U | PAGE_R | PAGE_W | PAGE_X);
     }
 }

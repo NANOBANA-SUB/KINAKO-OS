@@ -22,3 +22,11 @@ void map_page(uint32_t *table1, uint32_t vaddr, paddr32_t paddr, uint32_t flags)
 //! @param table1 第一テーブルのポインタ
 //!
 void kernel_map_page(uint32_t *table1);
+
+//!
+//! ユーザアプリケーションのページマッピングを行う
+//! @param table1 第一テーブルのポインタ
+//! @param image 実行イメージのポインタ
+//! @param image_size 実行イメージのサイズ
+//!
+void user_map_page(uint32_t *table1, const void *image, size_t image_size);

@@ -28,3 +28,5 @@ typedef uint64_t uintptr64_t;
 #define va_arg __builtin_va_arg
 
 #define PAGE_SIZE 4096
+
+#define USER_BASE 0x1000000
