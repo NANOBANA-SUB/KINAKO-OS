@@ -1,4 +1,5 @@
 #include "user.h"
+#include "syscall.h"
 
 extern char __stack_top[];
 
@@ -9,7 +10,15 @@ __attribute__((noreturn)) void exit(void)
 
 void putchar(char ch) 
 {
-    /* 後で実装する */
+    syscall(SYS_PUTCHAR, ch, 0, 0);
+}
+
+void puts(const char *buf)
+{
+    while(*buf)
+    {
+        putchar(*buf++);
+    }
 }
 
 __attribute__((section(".text.start")))

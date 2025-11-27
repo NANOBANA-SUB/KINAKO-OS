@@ -46,8 +46,14 @@ void kernel_entry(void);
 //!
 void trap_init(void);
 
-//!!
+//!
 //! 例外ハンドラ
 //! @param tf トラップフレームへのポインタ
 //!!
 void handle_trap(struct trap_frame *tf);
+
+//!
+//! システムコール例外処理ハンドラ
+//! @param tf トラップフレームへのポインタ
+//!
+void syscall_handler(struct trap_frame *tf);
