@@ -21,6 +21,9 @@ struct cpu* mycpu(void)
 struct proc g_procs[PROC_MAX];                      // 全てのプロセス
 struct proc *g_current_proc = (struct proc*)NULL;   // 現在実行中のプロセス
 
+extern char _binary_build_user_shell_bin_end[];     // ユーザの実行イメージの終了場所
+extern char _binary_build_user_shell_bin_start[];   // ユーザの実行イメージの開始場所
+
 /* 内部で用いるグローバル変数群 */
 static struct context g_boot_context;               // ブートプロセスのコンテキスト
 static uint32_t next_pid = 1;                       // 次に割り当てるプロセスID
@@ -169,7 +172,6 @@ static void __schedule()
         "csrw satp, %[satp]\n"
         "sfence.vma\n"
         :
-        // 行末のカンマを忘れずに！
         : [satp] "r" (SATP_SV32 | ((uint32_t) next_proc->pagetable / PAGE_SIZE))
     );
 
@@ -229,6 +231,11 @@ uint32_t proc_create(proc_entry_t entry, void* arg, const char* name)
     uint32_t *pagetable = (uint32_t *)alloc_pages(1);
     kernel_map_page(pagetable);
 
+    // ユーザの実効イメージをマッピングする
+    const void *image = (void *)_binary_build_user_shell_bin_start;
+    const size_t image_size = (size_t)(_binary_build_user_shell_bin_end - _binary_build_user_shell_bin_start);
+    user_map_page(pagetable, image, image_size);
+
     p->pagetable = pagetable;
 
     // プロセスコンテキストを初期化
@@ -268,6 +275,16 @@ void scheduler_start(void)
     // 現在のプロセスを設定
     g_current_proc = next_proc;
     next_proc->state = PROC_STATE_RUNNING;
+
+    // ページテーブルの切り替えを行う
+    __asm__ __volatile__
+    (
+        "sfence.vma\n"
+        "csrw satp, %[satp]\n"
+        "sfence.vma\n"
+        :
+        : [satp] "r" (SATP_SV32 | ((uint32_t) next_proc->pagetable / PAGE_SIZE))
+    );
 
     // コンテキストスイッチを実行
     context_switch(&g_boot_context, &next_proc->context);
