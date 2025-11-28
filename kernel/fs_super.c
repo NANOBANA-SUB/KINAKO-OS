@@ -65,5 +65,5 @@ void fs_test_super(void)
     }
     // 必要なら他のフィールドもチェック
 
-    printk("fs: superblock test OK\n");
+    printk("fs: superblock test [OK]\n");
 }

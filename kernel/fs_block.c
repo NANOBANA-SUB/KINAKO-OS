@@ -40,6 +40,7 @@ void fs_init(void)
     
     fs_test_block();
     fs_test_super();
+    fs_test_inode();
 }
 
 void fs_test_block(void)
@@ -79,5 +80,5 @@ void fs_test_block(void)
         }
     }
 
-    printk("fs: block test OK\n");
+    printk("fs: block test [OK]\n");
 }
