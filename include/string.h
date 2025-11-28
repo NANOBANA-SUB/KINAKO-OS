@@ -19,6 +19,14 @@ void *memset(void *s, int c, size_t n);
 void *memcpy(void *dest, const void *src, size_t n);
 
 //!
+//! 指定バイト数のメモリブロックを比較する
+//! @param buf1 比較対象メモリのポインタ
+//! @param buf2 比較対象メモリのポインタ
+//! @param n 比較サイズ
+//! @return buf1 > buf2の場合1, buf1 = buf2の場合0, buf1 < buf2の場合-1
+int memcmp(const void *buf1, const void *buf2, size_t n);
+
+//!
 //! 文字列の長さを取得する
 //! @param s 文字列の先頭アドレス
 //! @return 文字列の長さ
