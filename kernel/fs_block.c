@@ -41,6 +41,7 @@ void fs_init(void)
     fs_test_block();
     fs_test_super();
     fs_test_inode();
+    fs_test_namei();
 }
 
 void fs_test_block(void)

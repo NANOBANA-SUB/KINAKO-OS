@@ -118,15 +118,31 @@ void iunlock(struct inode *ip);
 //!
 //! 指定したinodeからデータを読み出す
 //! @param ip inodeのポインタ
-//! @param dst 読み込みデータへのポインタ
+//! @param dst 読み込み先データへのポインタ
 //! @param off オフセット
 //! @param n 読み込むサイズ
-//! @return 成功したら0, 失敗したら-1
+//! @return 読み取ったバイト数
 //!
 int readi(struct inode *ip, void *dst, uint32_t off, uint32_t n);
+
+//!
+//! ディレクトリから特定のファイル名の検索を行う
+//! @param dp ディレクトリのinode
+//! @param name 探したいファイル名
+//! @param poff 見つかった位置(NULL可)
+//! @return 該当のinode
+//!
+struct inode *dirlookup(struct inode *dp, const char *name, uint32_t *poff);
+
+//!
+//! ディレクトリを順番にたどりながらinodeを探す関数
+//! @param path パス名
+//!
+struct inode *namei(const char *path);
 
 /* FSの初期化およびテスト */
 void fs_init(void);
 void fs_test_block(void);
 void fs_test_super(void);
 void fs_test_inode(void);
+void fs_test_namei(void);

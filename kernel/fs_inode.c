@@ -6,9 +6,9 @@
 extern struct superblock g_sb;
 static struct inode g_icache[NINODE];
 
-#define IPB (BSIZE / sizeof(struct dinode)) // inode 一個あたりのサイズ
-
 /* ユーティリティおよびヘルパー関数 */
+#define IPB (BSIZE / sizeof(struct dinode)) // inode 一個あたりのサイズ
+#define ROOT_INO 1
 
 //inode番号からディスク上dinodeへのマッピングを行う
 static inline uint32_t inode_blockno(uint32_t inum)
@@ -36,6 +36,55 @@ static uint32_t bmap(struct inode *ip, uint32_t bn)
     // 間接ブロックは後で
     printk("bmap: indirect not implemented\n");
     return 0;
+}
+
+static int namecmp(const char *s, const char *t)
+{
+    return strncmp(s, t, DIRSIZ);
+}
+
+//!
+//! @brief パスを分解するヘルパー関数
+//! @brief pathの先頭から1要素取り出してnameに入れ、pathの残りのポインタを返す。
+//! @param path 分解するパス
+//! @param name 取り出したパス名
+//! @return nameを取り出した後の残りのpath
+//!
+static const char *skipelem(const char *path, char *name)
+{
+    const char *s;
+    int len;
+
+    // 先頭の'/'を飛ばす
+    while(*path == '/')
+    {
+        path++;
+    }
+    if (*path == 0)
+    {
+        return NULL;
+    }
+
+    s = path;
+
+    while(*path != '/' && *path != 0)
+    {
+        path++;
+    }
+    len = path - s;
+    if (len >= DIRSIZ)
+    {
+        len = DIRSIZ - 1;
+    }
+    memcpy(name, s, len);
+    name[len] = 0;
+
+    // 次の要素のために'/'をスキップ
+    while (*path == '/')
+    {
+        path++;
+    }
+    return path;
 }
 
 /* APIの実装 */
@@ -239,3 +288,212 @@ void fs_test_inode(void)
 
     printk("fs: inode test [OK]\n");
 }
+
+struct inode *dirlookup(struct inode *dp, const char *name, uint32_t *poff)
+{
+    if (dp->type != T_DIR)
+    {
+        printk("dirlookup: this is not a dir");
+        return (struct inode*)NULL;
+    }
+
+    struct dirent de;
+    uint32_t off;
+
+    for (off = 0; off < dp->size; off += sizeof(struct dirent))
+    {
+        int n = readi(dp, &de, off, sizeof(de));
+        if (n != sizeof(de))
+        {
+            printk("dirlookup: readi error\n");
+            return (struct inode*)NULL;
+        }
+        if (de.inum == 0)
+        {
+            // 空のエントリー
+            continue;
+        }
+        if (namecmp(de.name, name) == 0) 
+        {
+            // 見つかった
+            if (poff) 
+            {
+                *poff = off;
+            }
+            return iget(de.inum);
+        }
+    }
+    return (struct inode*)NULL;
+}
+
+struct inode *namei(const char *path)
+{
+    struct inode *ip;
+    char name[DIRSIZ];
+    const char *p;
+
+    if (*path == '/')
+    {
+        ip = iget(ROOT_INO);    // ルートから開始
+    }
+    else
+    {
+        // 現状の実装ではルート固定にしてある
+        ip = iget(ROOT_INO);
+    }
+
+    while((p = skipelem(path, name)) != NULL)
+    {
+        path = p;
+        ilock(ip);
+        if (ip->type != T_DIR)
+        {
+            printk("namei: not dir in path\n");
+            return NULL;
+        }
+        struct inode *next = dirlookup(ip, name, NULL);
+
+        iunlock(ip);
+        if (next == NULL)
+        {
+            return NULL;
+        }
+        ip = next;
+    }
+    return ip;
+}
+
+#define ROOT_INO  1
+#define HELLO_INO 2
+
+static void fs_test_write_fake_root_and_file(void)
+{
+    const char *msg = "Hello from inode!\n";
+    uint32_t msg_len = (uint32_t)strlen(msg);
+
+    // 適当なブロック番号を選ぶ
+    uint32_t data_block = g_sb.bmapstart + 1;   // /hello の中身
+    uint32_t dir_block  = g_sb.bmapstart + 2;   // ルートディレクトリのエントリ
+
+    uint8_t buf[BSIZE];
+
+    // 1. /hello のデータブロックを書き込む
+    memset(buf, 0, sizeof(buf));
+    memcpy(buf, msg, msg_len);
+    bdev_write(data_block, buf);
+
+    // 2. ルートディレクトリのデータブロック（dirent）を書く
+    struct dirent de[3];
+
+    // "."
+    de[0].inum = ROOT_INO;
+    memset(de[0].name, 0, DIRSIZ);
+    strncpy(de[0].name, ".", DIRSIZ);
+
+    // ".."（ルートなので親も自分）
+    de[1].inum = ROOT_INO;
+    memset(de[1].name, 0, DIRSIZ);
+    strncpy(de[1].name, "..", DIRSIZ);
+
+    // "hello"
+    de[2].inum = HELLO_INO;
+    memset(de[2].name, 0, DIRSIZ);
+    strncpy(de[2].name, "hello", DIRSIZ);
+
+    memset(buf, 0, sizeof(buf));
+    memcpy(buf, de, sizeof(de));
+    bdev_write(dir_block, buf);
+
+    // 3. inode ブロックを読み出して、ROOT_INO と HELLO_INO を書き込む
+    uint8_t ibuf[BSIZE];
+
+    // a) ROOT_INO
+    uint32_t bno = inode_blockno(ROOT_INO);
+    uint32_t idx = inode_block_index(ROOT_INO);
+
+    if (bdev_read(bno, ibuf) != 0) 
+    {
+        printk("fs: failed to read inode block (root)\n");
+        return;
+    }
+
+    struct dinode *dip = (struct dinode *)ibuf;
+    dip += idx;
+
+    memset(dip, 0, sizeof(*dip));
+    dip->type  = T_DIR;
+    dip->nlink = 1;
+    dip->size  = sizeof(de);    // 3エントリ分
+    dip->addrs[0] = dir_block;
+
+    if (bdev_write(bno, ibuf) != 0) 
+    {
+        printk("fs: failed to write inode block (root)\n");
+        return;
+    }
+
+    // b) HELLO_INO
+    bno = inode_blockno(HELLO_INO);
+    idx = inode_block_index(HELLO_INO);
+
+    if (bdev_read(bno, ibuf) != 0) 
+    {
+        printk("fs: failed to read inode block (hello)\n");
+        return;
+    }
+
+    dip = (struct dinode *)ibuf;
+    dip += idx;
+
+    memset(dip, 0, sizeof(*dip));
+    dip->type  = T_FILE;
+    dip->nlink = 1;
+    dip->size  = msg_len;
+    dip->addrs[0] = data_block;
+
+    if (bdev_write(bno, ibuf) != 0) 
+    {
+        printk("fs: failed to write inode block (hello)\n");
+        return;
+    }
+}
+
+void fs_test_namei(void)
+{
+    printk("fs: namei test start\n");
+
+    // テスト用にディスク内容を構築
+    fs_test_write_fake_root_and_file();
+
+    // inode キャッシュ初期化
+    inode_init();
+
+    struct inode *ip = namei("/hello");
+    if (ip == NULL) 
+    {
+        printk("fs: namei test failed: namei returned NULL\n");
+        return;
+    }
+
+    ilock(ip);
+
+    char buf[64];
+    int n = readi(ip, buf, 0, sizeof(buf) - 1);
+    if (n < 0) 
+    {
+        printk("fs: namei test failed: readi error\n");
+        return;
+    }
+    buf[n] = '\0';
+
+    printk("fs: namei /hello content: \"%s\"\n", buf);
+
+    if (strcmp(buf, "Hello from inode!\n") != 0) 
+    {
+        printk("fs: namei test failed: content mismatch\n");
+        return;
+    }
+
+    printk("fs: namei test [OK]\n");
+}
+
