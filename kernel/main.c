@@ -15,6 +15,7 @@
 
 extern char __bss[];
 extern char __bss_end[];
+extern void ktests_run_string();
 
 static void kernel_main(void);
 
@@ -53,6 +54,9 @@ void start_kernel(void)
 
     // 例外ハンドラの初期化
     trap_init();
+
+    // ライブラリのテスト
+    ktests_run_string();
 
     // ファイルシステムの初期化
     fs_init();

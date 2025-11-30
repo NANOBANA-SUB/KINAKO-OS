@@ -16,6 +16,7 @@ KERNEL_BIN := $(BUILDDIR)/kernel.bin
 
 # パス類
 ARCH_DIR         := arch/$(ARCH)
+TEST_DIR		 := test
 INCLUDE_DIR      := include
 INCLUDE_ARCH_DIR := $(ARCH_DIR)/include
 
@@ -73,7 +74,11 @@ SRCS_LIB := \
 SRCS_MM := \
 	$(wildcard mm/*.c)
 
-KERNEL_SRCS := $(SRCS_ARCH) $(SRCS_KERNEL) $(SRCS_LIB) $(SRCS_MM)
+SRCS_TEST := \
+	$(wildcard $(TEST_DIR)/lib/*.c) \
+	$(wildcard $(TEST_DIR)/mm/*.c) \
+
+KERNEL_SRCS := $(SRCS_ARCH) $(SRCS_KERNEL) $(SRCS_LIB) $(SRCS_MM) $(SRCS_TEST)
 
 # build/ を頭に付けた .o に変換
 KERNEL_OBJS := $(patsubst %.c,$(OBJDIR)/%.o,$(KERNEL_SRCS))
@@ -131,6 +136,16 @@ $(OBJDIR)/lib/%.o: lib/%.c
 
 # mm/*.c → build/mm/*.o
 $(OBJDIR)/mm/%.o: mm/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS_KERNEL) -c $< -o $@
+
+# test/lib/*.c -> build/test/lib/*.o
+$(OBJDIR)/test/lib/%.o: test/lib/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS_KERNEL) -c $< -o $@
+
+# test/mm/*.c -> build/test/mm/*.o
+$(OBJDIR)/test/mm/%.o: test/mm/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS_KERNEL) -c $< -o $@
 
