@@ -1,6 +1,6 @@
 #include "syscall.h"
 
-int syscall(uint32_t syscall_no, int arg0, int arg1, int arg2)
+int syscall(uint32_t syscall_no, uintptr_t arg0, uintptr_t arg1, uintptr_t arg2)
 {
     register int a0 __asm__("a0") = arg0;
     register int a1 __asm__("a1") = arg1;

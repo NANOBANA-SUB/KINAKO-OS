@@ -6,7 +6,7 @@
 #include "alloc.h"
 #include "MMU.h"
 
-/* マルチコア対応へ向けたCPU情報の取得など */
+/* ==== マルチコア対応へ向けたCPU情報の取得など ======================================= */
 struct cpu cpus[CPU_MAX];       // 全てのCPU
 
 struct cpu* mycpu(void) 
@@ -17,16 +17,18 @@ struct cpu* mycpu(void)
     return &cpus[cpu_id];
 }
 
-/* グローバル変数群 */
+/* ==== グローバル変数群 =========================================================== */
 struct proc g_procs[PROC_MAX];                      // 全てのプロセス
 struct proc *g_current_proc = (struct proc*)NULL;   // 現在実行中のプロセス
 
 extern char _binary_build_user_shell_bin_end[];     // ユーザの実行イメージの終了場所
 extern char _binary_build_user_shell_bin_start[];   // ユーザの実行イメージの開始場所
 
-/* 内部で用いるグローバル変数群 */
+/* ==== 内部で用いるグローバル変数群 ================================================= */
 static struct context g_boot_context;               // ブートプロセスのコンテキスト
 static uint32_t next_pid = 1;                       // 次に割り当てるプロセスID
+
+/* ==== 内部で用いる関数群 ========================================================== */
 
 //!
 //! 新しいプロセスIDを割り当てる
@@ -35,8 +37,6 @@ static uint32_t alloc_pid(void)
 {
     return next_pid++;
 }
-
-/* 内部で用いる関数群 */
 
 //!
 //! 新しいプロセス構造体を割り当てる
@@ -190,7 +190,7 @@ static void __schedule()
     }
 }
 
-/* 公開API群 */
+/* ==== 公開API群 ================================================================= */
 void proc_init(void) 
 {
     // 全プロセス構造体を初期化
@@ -201,6 +201,10 @@ void proc_init(void)
     {
         g_procs[i].state = PROC_STATE_UNUSED;
         g_procs[i].pid = 0;
+
+        // fileの初期化処理
+        for (int j = 0; j < NOFILE; j++)
+            g_procs[i].ofile[j] = NULL;
     }
     g_current_proc = (struct proc*)NULL;
 }
@@ -346,7 +350,7 @@ void proc_exit(void)
     panic("proc_exit: returned from context_switch unexpectedly");
 }
 
-/* 初期化コンテキストおよびトランポリン */
+/* ==== 初期化コンテキストおよびトランポリン ================================================= */
 
 // 新規プロセスが最初にschedulerから帰ってきた時に
 // ra = proc_trampolineとなるようにセットしておいて、
