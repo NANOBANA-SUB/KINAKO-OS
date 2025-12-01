@@ -3,6 +3,7 @@
 #include "csr.h"
 #include "proc.h"
 #include "syscall.h"
+#include "syscall_fs.h"
 
 __attribute__((naked))
 __attribute__((aligned(4)))
@@ -145,6 +146,14 @@ void handle_trap(struct trap_frame *tf)
     panic("Unhandled trap/interrupt occurred.");
 }
 
+static inline uint32_t r_sstatus(void)
+{
+    uint32_t x;
+    asm volatile("csrr %0, sstatus" : "=r"(x));
+    return x;
+}
+
+
 void syscall_handler(struct trap_frame *tf)
 {
     switch (tf->a3)
@@ -163,6 +172,24 @@ void syscall_handler(struct trap_frame *tf)
             }
             yield();
         }
+        break;
+    case SYS_WRITE:
+        break;
+    case SYS_OPEN:
+        uint32_t satp_val;
+        asm volatile("csrr %0, satp" : "=r"(satp_val));
+        uint32_t sstatus = r_sstatus();
+
+        printk("syscall_handler: satp=%x, current pagetable=%x, sstatus=%x\n",
+           satp_val, (uint32_t)g_current_proc->pagetable, sstatus);
+           
+        tf->a0 = sys_open((const char *)tf->a0, tf->a1);
+        break;
+    case SYS_READ:
+        tf->a0 = sys_read(tf->a0, (void *)tf->a1, tf->a2);
+        break;
+    case SYS_CLOSE:
+        tf->a0 = sys_close(tf->a0);
         break;
     default:
         panic("syscall_hander:unexpected syscall a3=%x\n", tf->a3);

@@ -1,5 +1,6 @@
 #pragma once
 #include "common.h"
+#include "fs.h"
 
 #define CPU_MAX      4  // 最大CPU数
 
@@ -7,6 +8,9 @@
 #define PROC_MAX      64 // 最大プロセス数
 
 #define KSTACK_SIZE   4096 // カーネルスタックサイズ
+
+#define NOFILE 16       // 1プロセスあたりの最大オープンファイル数
+
 
 //!
 //! コンテキスト情報を保持する構造体
@@ -72,6 +76,7 @@ struct proc
     void            *kstack_top;            // カーネルスタックのトップアドレス
 
     char            name[PROC_NAME_MAX];    // プロセス名
+    struct file     *ofile[NOFILE];         // プロセス内で扱えるファイル
 };
 
 extern struct proc *g_current_proc; // 現在実行中のプロセス

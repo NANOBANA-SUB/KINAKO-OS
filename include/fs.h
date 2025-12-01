@@ -1,11 +1,11 @@
 #pragma once
 #include "common.h"
 
-/* ブロックデバイス層 */
+/* ==== ブロックデバイス層 ===================================================== */
 #define BSIZE 1024          // ブロックサイズ
 #define DISK_NBLOCKS 1024   // 仮想ディスクのブロック数(1 * 1024 * 1024 = 1MB)
 
-/* superblock */
+/* ==== superblock ========================================================== */
 struct superblock 
 {
     uint32_t size;       // 全ブロック数
@@ -21,7 +21,7 @@ struct superblock
 
 extern struct superblock g_sb;
 
-/* inode */
+/* ==== inode =============================================================== */
 // inode type
 #define T_NONE  0
 #define T_DIR   1
@@ -59,7 +59,7 @@ struct inode
 
 #define NINODE 32
 
-/* ディレクトリ構造 */
+/* ==== ディレクトリ構造 ======================================================== */
 #define DIRSIZ 14   // ディレクトリ名称のサイズ
 struct dirent
 {
@@ -67,8 +67,29 @@ struct dirent
     char name[DIRSIZ];
 };
 
+/* ファイル層 */
+enum
+{
+    FD_NONE = 0,
+    FD_INODE = 1,
+};
 
-/* ブロックデバイスAPI */
+struct file
+{
+    int type;           // FD_INODEなど
+    int ref;            // 参照カウント
+    char readable;      // 読み取り可能か
+    char writable;      // 書き込み可能か
+    struct inode *ip;   // 対応するinode
+    uint32_t off;       // 読み書きオフセット
+};
+
+#define O_RDONLY  0x0
+#define O_WRONLY  0x1
+#define O_RDWR    0x2
+#define O_CREATE  0x200  // 現状未使用
+
+/* ===== ブロックデバイスAPI =================================================== */
 //!
 //! 指定したブロックナンバーのデータをブロックサイズ分だけ読み込む
 //! 読み込みに成功した場合、入力元であるdstにデータが入る
@@ -86,14 +107,14 @@ int bdev_read(uint32_t blockno, void *dst);
 //!
 int bdev_write(uint32_t blockno, const void *src);
 
-/* スーパーブロックAPI */
+/* ==== スーパーブロックAPI ==================================================== */
 
 //!
 //! superblockのロードを行う
 //!
 void fs_load_super(void);
 
-/* inode API */
+/* ==== inode API =========================================================== */
 
 //!
 //! inodeの初期化
@@ -140,9 +161,52 @@ struct inode *dirlookup(struct inode *dp, const char *name, uint32_t *poff);
 //!
 struct inode *namei(const char *path);
 
-/* FSの初期化およびテスト */
+/* ==== file層API =========================================================== */
+
+//!
+//! ファイル層の初期化を行う
+//!
+void         file_init(void);
+
+//!
+//! ファイルのアロケートを行う
+//! @return アロケートしたファイルのポインタ
+//!
+struct file *file_alloc(void);
+
+//!
+//! ファイルを閉じる
+//! @param f 閉じたいファイルのポインタ
+//!
+void         file_close(struct file *f);
+
+//!
+//! ファイルを読み取る
+//! @param f 読みたいファイルのポインタ
+//! @param dst 読み込み先
+//! @param 読み取りサイズ
+//! @return 読み取ったバイト数
+//!
+int          file_read(struct file *f, void *dst, uint32_t n);
+
+//!
+//! ファイルを書き出す
+//! 
+int          file_write(struct file *f, const void *src, uint32_t n);
+
+//!
+//! パスから file* を取得するkernel内部用open
+//! @param path パス
+//! @param omode モード
+//! @return 取得したファイルのポインタ
+//!
+struct file *file_open(const char *path, int omode);
+
+/* ==== FSの初期化およびテスト ========================================================= */
 void fs_init(void);
+void fs_build_test_fs_basic();  // テスト用のFSレイアウトを構築
 void fs_test_block(void);
 void fs_test_super(void);
 void fs_test_inode(void);
 void fs_test_namei(void);
+void fs_test_file(void);

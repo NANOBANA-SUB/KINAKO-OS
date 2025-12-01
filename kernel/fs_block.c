@@ -38,10 +38,19 @@ void fs_init(void)
 {
     printk("fs: init\n");
     
-    fs_test_block();
-    fs_test_super();
-    fs_test_inode();
-    fs_test_namei();
+    fs_test_block();            // ブロックデバイス層のテスト
+
+    fs_build_test_fs_basic();   // テスト用FSを構築する
+
+    fs_load_super();            // ディスクからsuperblockの読み込みを行う
+    fs_test_super();            // superblockが期待通りに動くか確認する(現状はreadのみ)
+
+    inode_init();
+    file_init();
+
+    fs_test_inode();            // inode=2(/hello)をreadiで確認する
+    fs_test_namei();            // namei("/hello")をreadiで確認する
+    fs_test_file();             // file_open("/hello")をfile_readで確認する
 }
 
 void fs_test_block(void)

@@ -49,9 +49,6 @@ void fs_test_super(void)
 {
     printk("fs: superblock test start\n");
 
-    fs_test_write_fake_super();  // テスト用に一旦書く
-    fs_load_super();             // 読み込む
-
     // 読み込んだ g_sb が期待値と一致するかチェック
     if (g_sb.size != DISK_NBLOCKS) 
     {

@@ -3,6 +3,7 @@
 
 extern char _binary_build_user_shell_bin_start[];
 extern char _binary_build_user_shell_bin_size[];
+extern int cat();
 
 static int readline(char *buf, int buf_size)
 {
@@ -72,6 +73,10 @@ void main(void)
         else if (!strcmp(line, "kinako"))
         {
             puts("Nanobana Kinako is very cute !\n");
+        }
+        else if (!strcmp(line, "cat"))
+        {
+            cat();
         }
         else
         {

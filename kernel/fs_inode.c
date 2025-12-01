@@ -9,6 +9,7 @@ static struct inode g_icache[NINODE];
 /* ユーティリティおよびヘルパー関数 */
 #define IPB (BSIZE / sizeof(struct dinode)) // inode 一個あたりのサイズ
 #define ROOT_INO 1
+#define HELLO_INO 2
 
 //inode番号からディスク上dinodeへのマッピングを行う
 static inline uint32_t inode_blockno(uint32_t inum)
@@ -154,6 +155,10 @@ void ilock(struct inode *ip)
     struct dinode *dip = (struct dinode*)buf;
     dip += index;
 
+    printk("ilock: dinode(type=%u, size=%u, addrs0=%u)\n",
+           dip->type, dip->size, dip->addrs[0]);
+
+
     ip->type = dip->type;
     ip->major = dip->major;
     ip->minor = dip->minor;
@@ -256,15 +261,10 @@ void fs_test_inode(void)
 {
     printk("fs: inode test start\n");
 
-    // テスト用 inode + data を書き込む
-    fs_test_write_fake_inode_and_data();
-
-    // inode キャッシュ初期化
-    inode_init();
-
-    // inode 1 を取ってくる
-    struct inode *ip = iget(1);
-    if (!ip) {
+    // HELLO_INO を取ってくる
+    struct inode *ip = iget(HELLO_INO);
+    if (!ip) 
+    {
         printk("fs: inode test failed: iget\n");
         return;
     }
@@ -273,7 +273,8 @@ void fs_test_inode(void)
 
     char buf[64];
     int n = readi(ip, buf, 0, sizeof(buf) - 1);
-    if (n < 0) {
+    if (n < 0) 
+    {
         printk("fs: inode test failed: readi\n");
         return;
     }
@@ -281,7 +282,8 @@ void fs_test_inode(void)
 
     printk("fs: inode content: \"%s\"\n", buf);
 
-    if (strcmp(buf, "Hello from inode!\n") != 0) {
+    if (strcmp(buf, "Hello from inode!\n") != 0) 
+    {
         printk("fs: inode test failed: content mismatch\n");
         return;
     }
@@ -362,9 +364,6 @@ struct inode *namei(const char *path)
     }
     return ip;
 }
-
-#define ROOT_INO  1
-#define HELLO_INO 2
 
 static void fs_test_write_fake_root_and_file(void)
 {
@@ -461,12 +460,6 @@ static void fs_test_write_fake_root_and_file(void)
 void fs_test_namei(void)
 {
     printk("fs: namei test start\n");
-
-    // テスト用にディスク内容を構築
-    fs_test_write_fake_root_and_file();
-
-    // inode キャッシュ初期化
-    inode_init();
 
     struct inode *ip = namei("/hello");
     if (ip == NULL) 
